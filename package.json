@@ -7,6 +7,7 @@
     "js-wiktionary-scraper": "^1.3.2",
     "mysql": "^2.18.1",
     "node-fetch": "^3.3.0",
+    "openai": "^3.2.1",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
