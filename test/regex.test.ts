@@ -44,4 +44,31 @@ describe('regex', () => {
             ))
             .toEqual("pedō m (genitive pedōnis) (Late Latin)");
     });
+
+    it('extracts the gender', () => {
+        expect(regex.extractGender('pedō m (genitive pedōnis); first/second-declension (Late Latin)'))
+            .toEqual('masculinum');
+
+        expect(regex.extractGender("abstrūdō (present infinitive abstrūdere, perfect active abstrūsī, supine abstrūsum); third conjugation"))
+            .toEqual('-');
+
+        expect(regex.extractGender("acatus f (genitive acatī); second declension"))
+            .toEqual('femininum');
+
+        expect(regex.extractGender("bellum n (genitive bellī); second declension"))
+            .toEqual('neutrum');
+    });
+
+    it('removes the gender', () => {
+        expect(regex.removeGender("pedō m (genitive pedōnis); first/second-declension (Late Latin)"))
+            .toEqual("pedō (genitive pedōnis); first/second-declension (Late Latin)");
+    });
+
+    it('removes all useless information', () => {
+        expect(regex.removeAll("abstrūdō (present infinitive abstrūdere, perfect active abstrūsī, supine abstrūsum); third conjugation"))
+            .toEqual("abstrūdō");
+        
+        expect(regex.removeAll("pedō m (genitive pedōnis); first/second-declension (Late Latin)"))
+            .toEqual("pedō");
+    });
 });
