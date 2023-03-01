@@ -71,4 +71,31 @@ describe('regex', () => {
         expect(regex.removeAll("pedō m (genitive pedōnis); first/second-declension (Late Latin)"))
             .toEqual("pedō");
     });
+
+    it('correctly extracts information from a verb', () => {
+        const data = "abstineō (present infinitive abstinēre, perfect active abstinuī, supine abstentum); second conjugation";
+        
+        const removed = regex.removeParentheses(data);
+        expect(removed).toEqual("abstineō; second conjugation");
+
+        const c = regex.extractConjugationOrDeclension(data);
+        expect(c?.number).toEqual(['second']);
+        expect(c?.type).toEqual('conjugation');
+
+        const g = regex.extractGender(data);
+        expect(g).toEqual('-');
+    });
+
+    it('correctly extracts information from a conjunction', () => {
+        const data = "namque";
+        
+        const removed = regex.removeParentheses(data);
+        expect(removed).toEqual("namque");
+
+        const c = regex.extractConjugationOrDeclension(data);
+        expect(c).toBe(null);
+
+        const g = regex.extractGender(data);
+        expect(g).toEqual('-');
+    });
 });

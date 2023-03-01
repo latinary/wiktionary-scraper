@@ -43,7 +43,11 @@ export function extractGender(str: string): string {
 }
 
 export function removeGender(str: string): string {
-    return str.replace(/\s(m|f|n)\b\s*/gmi, '');
+    return removeExtraSpaces(str.replace(/(\s)(m|f|n)(\b\s*)/gmi, '$1$3')).trim();
+}
+
+export function removeExtraSpaces(str: string): string {
+    return str.replace(/\s{2,}/g, ' ');
 }
 
 export function removeAll(str: string): string {
