@@ -11,3 +11,5 @@ export type Word = {
     konjugacija: string,
     deleted: boolean,
 };
+
+export type InsertWord = Omit<Word, 'id' | 'dodan' | 'dodao' | 'updated' | 'deleted'>;

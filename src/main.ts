@@ -1,12 +1,18 @@
 import { translateToCroatian } from "./ai/ai.js";
+import { ScrapedResult } from "./scraper/models/scraped_word.js";
 import { scrapeWord } from "./scraper/scraper.js";
+import { convertWordData } from "./scraper/word_data.js";
 
-// getWord("https://en.wiktionary.org/wiki/videre#Latin");
+async function main() {
+    // const scraped = await scrapeWord("https://en.wiktionary.org/api/rest_v1/page/html/video");
 
-scrapeWord("https://en.wiktionary.org/wiki/video#Latin").then(console.log);
-scrapeWord("https://en.wiktionary.org/wiki/abduco#Latin").then(console.log);
-scrapeWord("https://en.wiktionary.org/wiki/abiecte#Latin").then(console.log);
+    // if (!scraped) {
+    //     console.log('Sto mu gromova!')
+    // }
 
-// translateToCroatian('1) an artificial intelligence').then((data) => {
-//     console.log(data);
-// });
+    // const data = await convertWordData(scraped as ScrapedResult);
+
+    // console.log(data);
+}
+
+main();
