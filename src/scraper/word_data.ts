@@ -1,8 +1,8 @@
-import { translateToCroatian } from "../ai/ai.js";
+import { chatgptTranslate, translateToCroatian } from "../ai/ai.js";
 import { InsertWord, Word } from "../database/models/word.js";
 import { ScrapedResult, ScrapedWord } from "./models/scraped_word.js";
 
-const titleMap = {
+const typeMap = {
     'verb': 'glagol',
     'noun': 'imenica',
     'adjective': 'pridjev',
@@ -48,6 +48,7 @@ export async function convertWordData(data: ScrapedResult): Promise<InsertWord[]
             dictForm = dictForm.trim();
 
             const translated = await translateToCroatian(dictForm);
+            // const translated = await chatgptTranslate(dictForm);
             // const translated = dictForm;
 
             let deklinacija = '';
@@ -65,10 +66,17 @@ export async function convertWordData(data: ScrapedResult): Promise<InsertWord[]
                 konjugacija = item.conjugation.join(' ili ');
             }
 
+            let tip = "-";
+
+            if (item.type && item.type in typeMap) {
+                // @ts-ignore
+                tip = typeMap[item.type];
+            }
+
             const resp: InsertWord = {
                 rijec: item.rijec,
-                definicija: translated,
-                tip: item.type || '-',
+                definicija: translated.trim(),
+                tip,
                 rod: item.gender || '-',
                 deklinacija,
                 konjugacija

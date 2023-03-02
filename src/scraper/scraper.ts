@@ -71,13 +71,12 @@ export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
         }
         
         if (!h3) {
-            console.log('no h3?')
+            // console.log('no h3?');
             continue;
         }
 
         // @ts-ignore
         if (!titles.includes(h3.textContent.toLowerCase())) {
-            console.log('no title')
             continue;
         }
 
@@ -86,14 +85,14 @@ export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
         const wordEl = titleParent.querySelector('p');
 
         if (!wordEl) {
-            console.log('no word')
+            // console.log('no word')
             continue;
         }
 
         const word = wordEl.querySelector('.headword')?.textContent;
 
         if (!word) {
-            console.log('no word')
+            // console.log('no word')
             continue;
         }
 
