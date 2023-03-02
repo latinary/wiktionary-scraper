@@ -1,6 +1,9 @@
-import { parseWiki, WiktionaryMeaningData } from "js-wiktionary-scraper";
-import { ScrapedWord, WordResults } from "./models/scraped_word.js";
+import { ScrapedResult, ScrapedWord, WordResults } from "./models/scraped_word.js";
 import * as regex from '../util/regex.js';
+import cheerio from 'cheerio';
+import parser from 'node-html-parser'
+import { translateToCroatian } from "../ai/ai.js";
+import { urlToWord } from "../util/regex.js";
 
 const numberMap = {
     first: 1,
@@ -15,76 +18,117 @@ const numberMap = {
     tenth: 10,
 }
 
-function getData(data: WiktionaryMeaningData, type: string): ScrapedWord {
-    const rijec = regex.removeAll(data.head);
-    const dc = regex.extractConjugationOrDeclension(data.head);
+const titleMap = {
+    'verb': 'verbs',
+    'noun': 'nouns',
+    'adjective': 'adjectives',
+    'adverb': 'adverbs',
+    'conjunction': 'conjunctions',
+    'particle': 'particles',
+    'preposition': 'prepositions',
+    'proper noun': 'proper_nouns'
+};
 
-    let nums = [];
+export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
+    const word = urlToWord(url);
 
-    if (dc) {
-        for (const number of dc.number) {
-            // @ts-ignore
-            nums.push(numberMap[number]);
+    const data = await fetch(`https://en.wiktionary.org/api/rest_v1/page/html/${encodeURIComponent(word)}`);
+
+    if (!data.ok) {
+        return null;
+    }
+
+    const text = await data.text();
+
+    const document = parser.parse(text);
+    const section = document.querySelector('#Latin')?.parentNode;
+
+    if (!section) {
+        return null;
+    }
+
+    const response = {
+        adjectives: [],
+        adverbs: [],
+        conjunctions: [],
+        nouns: [],
+        particles: [],
+        prepositions: [],
+        proper_nouns: [],
+        verbs: [],
+    };
+
+    const titles = ['verb', 'noun', 'adjective', 'adverb', 'conjunction', 'particle', 'preposition', 'proper noun'];
+
+    const sections = section.querySelectorAll('section');
+
+    for (const section of sections) {
+        const h3 = section.querySelector('h3');
+
+        if (!h3) {
+            continue;
         }
-    }
+        
+        if (!titles.includes(h3.textContent.toLowerCase())) {
+            continue;
+        }
 
-    let declension = dc?.type == 'declension' ? nums : null;
-    let conjugation = dc?.type == 'conjugation' ? nums : null;
+        const wordEl = section.querySelector('p');
 
-    const gender = regex.extractGender(data.head);
+        if (!wordEl) {
+            continue;
+        }
 
-    let meanings = [];
+        const word = regex.removeAll(wordEl.textContent);
+        const gender = regex.extractGender(wordEl.textContent);
 
-    for (const meaning of data.meanings) {
-        // translate each meaning from English to Croatian
-    }
+        const dc = regex.extractConjugationOrDeclension(wordEl.textContent);
 
-    return {
-        rijec,
+        let nums = [];
+
+        if (dc) {
+            for (const number of dc.number) {
+                // @ts-ignore
+                nums.push(numberMap[number]);
+            }
+        }
+
+        let declension = dc?.type == 'declension' ? nums : null;
+        let conjugation = dc?.type == 'conjugation' ? nums : null;
+
+        const meanings: string[] = [];
+        
+        const ol = section.querySelector('ol')?.querySelectorAll('li');
+
+        if (ol) {
+            const allowedTags = ['a', 'span'];
+          
+            for (const child of ol) {
+                // @ts-ignore
+                const filteredChildNodes = Array.from(child.childNodes).filter(node => !node.tagName || allowedTags.includes(node.tagName?.toLowerCase()));
+                let text = "";
+                for (const node of filteredChildNodes) {
+                    text += node.textContent;
+                }
+                if (text) {
+                    meanings.push(text.trim());
+                }
+            }
+        }
+
+        const w: ScrapedWord = {
+            rijec: word,
+            meanings,
+            declension,
+            conjugation,
+            type: h3.textContent.toLowerCase(),
+            gender
+        };
+
+
         // @ts-ignore
-        declension,
-        // @ts-ignore
-        conjugation,
-        type,
-        gender
-    }
-}
-
-export async function getWord(url: string): Promise<WordResults> {
-    const wordData = await parseWiki(url, 'Latin');
-
-    if (wordData.error) {
-        throw 'Word not found';
+        response[titleMap[h3.textContent.toLowerCase()]].push(w);
     }
 
-    const results: WordResults = [];
-
-    const meanings = wordData.meanings;
-    
-    if (meanings?.adjective) {
-        results.push(getData(meanings.adjective, 'pridjev'));
-    }
-    if (meanings?.adverb) {
-        results.push(getData(meanings.adverb, 'prilog'));
-    }
-    if (meanings?.conjunction) {
-        results.push(getData(meanings.conjunction, 'veznik'));
-    }
-    if (meanings?.noun) {
-        results.push(getData(meanings.noun, 'imenica'));
-    }
-    if (meanings?.particle) {
-        results.push(getData(meanings.particle, 'čestica'));
-    }
-    if (meanings?.preposition) {
-        results.push(getData(meanings.preposition, 'prijedlog'));
-    }
-    if (meanings?.proper_noun) {
-        results.push(getData(meanings.proper_noun, 'vlastita imenica'));
-    }
-    if (meanings?.verb) {
-        results.push(getData(meanings.verb, 'glagol'));
-    }
-
-    return results;
+    return response;
 }

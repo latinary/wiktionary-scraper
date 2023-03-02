@@ -53,3 +53,12 @@ export function removeExtraSpaces(str: string): string {
 export function removeAll(str: string): string {
     return removeGender(removeConjugationOrDeclension(removeParentheses(str)));
 }
+
+export function urlToWord(url: string): string {
+    const pathname = new URL(url).pathname;
+    const parts = pathname.split('/');
+    const word = parts[parts.length - 1];
+  
+    // Remove any hash or query parameters from the word
+    return word.replace(/[#?].*$/, '');
+}
