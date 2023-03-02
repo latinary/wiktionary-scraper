@@ -8,6 +8,7 @@
     "node-fetch": "^3.3.0",
     "node-html-parser": "^6.1.5",
     "openai": "^3.2.1",
+    "puppeteer": "^19.7.2",
     "ts-node": "^10.9.1",
     "wiktionary-node": "^1.1.8"
   },

@@ -2,6 +2,17 @@ import { translateToCroatian } from "../ai/ai.js";
 import { InsertWord, Word } from "../database/models/word.js";
 import { ScrapedResult, ScrapedWord } from "./models/scraped_word.js";
 
+const titleMap = {
+    'verb': 'glagol',
+    'noun': 'imenica',
+    'adjective': 'pridjev',
+    'adverb': 'prilog',
+    'conjunction': 'veznik',
+    'particle': 'čestica',
+    'preposition': 'prijedlog',
+    'proper noun': 'vlastita imenica'
+};
+
 export async function convertWordData(data: ScrapedResult): Promise<InsertWord[]> {
     const keys = [
         'adjectives',

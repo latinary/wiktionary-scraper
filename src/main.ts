@@ -1,21 +1,22 @@
 import { translateToCroatian } from "./ai/ai.js";
+import { getLinks } from "./crawler/crawler.js";
 import { ScrapedResult } from "./scraper/models/scraped_word.js";
 import { scrapeWord } from "./scraper/scraper.js";
 import { convertWordData } from "./scraper/word_data.js";
+import fs from 'fs';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { loadWordList } from "./files/loader.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 async function main() {
-    const scraped = await scrapeWord("https://en.wiktionary.org/api/rest_v1/page/html/pedo");
-
-    // console.log(scraped);
-    console.log('Scraped word');
-
-    if (!scraped) {
-        console.log('Sto mu gromova!')
-    }
-
-    const data = await convertWordData(scraped as ScrapedResult);
-
-    console.log(data);
+    console.time('Loading words');
+    let words = loadWordList();
+    console.timeEnd('Loading words');
+    console.log(words.length);
 }
 
 main();
