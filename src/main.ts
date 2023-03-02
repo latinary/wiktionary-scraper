@@ -4,15 +4,18 @@ import { scrapeWord } from "./scraper/scraper.js";
 import { convertWordData } from "./scraper/word_data.js";
 
 async function main() {
-    // const scraped = await scrapeWord("https://en.wiktionary.org/api/rest_v1/page/html/video");
+    const scraped = await scrapeWord("https://en.wiktionary.org/api/rest_v1/page/html/pedo");
 
-    // if (!scraped) {
-    //     console.log('Sto mu gromova!')
-    // }
+    // console.log(scraped);
+    console.log('Scraped word');
 
-    // const data = await convertWordData(scraped as ScrapedResult);
+    if (!scraped) {
+        console.log('Sto mu gromova!')
+    }
 
-    // console.log(data);
+    const data = await convertWordData(scraped as ScrapedResult);
+
+    console.log(data);
 }
 
 main();

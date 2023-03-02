@@ -45,7 +45,6 @@ export async function convertWordData(data: ScrapedResult): Promise<InsertWord[]
             if (!item.declension) deklinacija = '-';
 
             else {
-                console.log(item.declension);
                 deklinacija = item.declension.join(' ili ');
             }
 

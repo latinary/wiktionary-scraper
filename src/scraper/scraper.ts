@@ -63,25 +63,37 @@ export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
     const sections = section.querySelectorAll('section');
 
     for (const section of sections) {
-        const h3 = section.querySelector('h3');
+        let h3 = section.querySelector('h3');
+        let h4 = section.querySelector('h4');
 
-        if (!h3) {
-            continue;
+        if (!h3 && h4) {
+            h3 = h4;
         }
         
-        if (!titles.includes(h3.textContent.toLowerCase())) {
+        if (!h3) {
+            console.log('no h3?')
             continue;
         }
 
-        const wordEl = section.querySelector('p');
+        // @ts-ignore
+        if (!titles.includes(h3.textContent.toLowerCase())) {
+            console.log('no title')
+            continue;
+        }
+
+        const titleParent = h3.parentNode;
+
+        const wordEl = titleParent.querySelector('p');
 
         if (!wordEl) {
+            console.log('no word')
             continue;
         }
 
         const word = wordEl.querySelector('.headword')?.textContent;
 
         if (!word) {
+            console.log('no word')
             continue;
         }
 
@@ -103,7 +115,7 @@ export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
 
         const meanings: string[] = [];
         
-        const ol = section.querySelector('ol')?.querySelectorAll('li');
+        const ol = titleParent.querySelector('ol')?.querySelectorAll('li');
 
         if (ol) {
             const allowedTags = ['a', 'span'];
@@ -128,6 +140,7 @@ export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
             meanings,
             declension,
             conjugation,
+            // @ts-ignore
             type: h3.textContent.toLowerCase(),
             gender
         };
