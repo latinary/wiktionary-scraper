@@ -79,7 +79,12 @@ export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
             continue;
         }
 
-        const word = regex.removeAll(wordEl.textContent);
+        const word = wordEl.querySelector('.headword')?.textContent;
+
+        if (!word) {
+            continue;
+        }
+
         const gender = regex.extractGender(wordEl.textContent);
 
         const dc = regex.extractConjugationOrDeclension(wordEl.textContent);
@@ -107,9 +112,11 @@ export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
                 // @ts-ignore
                 const filteredChildNodes = Array.from(child.childNodes).filter(node => !node.tagName || allowedTags.includes(node.tagName?.toLowerCase()));
                 let text = "";
+
                 for (const node of filteredChildNodes) {
                     text += node.textContent;
                 }
+
                 if (text) {
                     meanings.push(text.trim());
                 }
@@ -124,7 +131,6 @@ export async function scrapeWord(url: string): Promise<ScrapedResult | null> {
             type: h3.textContent.toLowerCase(),
             gender
         };
-
 
         // @ts-ignore
         response[titleMap[h3.textContent.toLowerCase()]].push(w);
