@@ -13,6 +13,18 @@ const typeMap = {
     'proper noun': 'vlastita imenica'
 };
 
+type modelType = 'chatgpt' | 'davinci';
+
+let model: modelType = 'chatgpt';
+
+export function changeModel(newModel: modelType) {
+    model = newModel;
+}
+
+export function getModel(): modelType {
+    return model;
+}
+
 export async function convertWordData(data: ScrapedResult): Promise<InsertWord[]> {
     const keys = [
         'adjectives',
@@ -47,9 +59,7 @@ export async function convertWordData(data: ScrapedResult): Promise<InsertWord[]
 
             dictForm = dictForm.trim();
 
-            const translated = await translateToCroatian(dictForm);
-            // const translated = await chatgptTranslate(dictForm);
-            // const translated = dictForm;
+            const translated = model == 'davinci' ? await translateToCroatian(dictForm) : await chatgptTranslate(dictForm);
 
             let deklinacija = '';
             let konjugacija = '';

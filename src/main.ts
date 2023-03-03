@@ -2,7 +2,7 @@ import { translateToCroatian } from "./ai/ai.js";
 import { getLinks } from "./crawler/crawler.js";
 import { ScrapedResult } from "./scraper/models/scraped_word.js";
 import { scrapeWord } from "./scraper/scraper.js";
-import { convertWordData } from "./scraper/word_data.js";
+import { changeModel, convertWordData, getModel } from "./scraper/word_data.js";
 import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -26,28 +26,56 @@ async function main() {
 
     console.log('Scraping words...');
 
-    for (let i = scrapedWords.length; i < words.length; i++) {
+    // @ts-ignore
+    const lastUrl: string = scrapedWords[scrapedWords.length - 1].url;
+    let start = false;
+
+    for (let i = 0; i < words.length; i++) {
         const word = words[i];
 
-        const scraped = await scrapeWord(word);
-        
-        if (!scraped) {
-            console.log(`Couldn't scrape: ${word}`);
+        if (word == lastUrl) {
+            start = true;
+            console.log(`Starting with ${word}`);
+        }
+        if (!start) {
             continue;
         }
 
-        console.log(`Scraped: ${word}`);
+        try {
+            const scraped = await scrapeWord(word);
+            
+            if (!scraped) {
+                console.log(`Couldn't scrape: ${word}`);
+                continue;
+            }
+    
+            console.log(`Scraped: ${word}`);
+    
+            const converted = await convertWordData(scraped as ScrapedResult);
+    
+            console.log(`Converted:`);
+            console.log(converted)
 
-        const converted = await convertWordData(scraped as ScrapedResult);
-
-        console.log(`Converted:`);
-        console.log(converted);
-
-        curr.push(...converted);
-
-        saveWords([...scrapedWords, ...curr]);
-
-        await sleep(1000);
+            if (converted.length > 0) {
+                // @ts-ignore
+                converted[converted.length - 1].url = word;
+            }
+    
+            curr.push(...converted);
+    
+            saveWords([...scrapedWords, ...curr]);
+    
+            await sleep(1000);
+        }
+        catch (e) {
+            const newModel = getModel() == 'chatgpt' ? 'davinci' : 'chatgpt';
+            console.log(e);
+            console.log(`Rate limit, switching model to ${newModel}`);
+            changeModel(newModel);
+            console.log(`Current word count: ${[...scrapedWords, ...curr].length}`);
+            await sleep(80 * 1000);
+            console.log('Recovering from rate limit');
+        }
     }
 }
 
