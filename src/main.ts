@@ -10,6 +10,7 @@ import { loadLinks } from "./files/loader.js";
 import { loadWords, saveWords } from "./files/words.js";
 import { InsertWord } from "./database/models/word.js";
 import { sleep } from "./util/util.js";
+import { insertWord } from "./database/word_adder.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,7 +18,9 @@ const __dirname = dirname(__filename);
 let scrapedWords = loadWords();
 let curr: InsertWord[] = [];
 
-async function main() {
+let delay = 200;
+
+async function generate() {
     console.time('Loading links');
     let words = loadLinks();
     console.timeEnd('Loading links');
@@ -65,7 +68,7 @@ async function main() {
     
             saveWords([...scrapedWords, ...curr]);
     
-            await sleep(1000);
+            await sleep(delay);
         }
         catch (e) {
             // const newModel = getModel() == 'chatgpt' ? 'davinci' : 'chatgpt';
@@ -73,10 +76,29 @@ async function main() {
             console.log(`Rate limit`);
             // changeModel(newModel);
             console.log(`Current word count: ${[...scrapedWords, ...curr].length}`);
-            await sleep(70 * 1000);
+            console.log(`Current delay: ${delay}ms`);
+            if (delay == 200) {
+                delay = 500;
+            }
+            else if (delay == 500) {
+                delay = 1000;
+            }
+            await sleep(60 * 1000);
             console.log('Recovering from rate limit');
         }
     }
+}
+
+async function addWords() {
+    // insertWord(scrapedWords[0]);
+    for (const word of scrapedWords) {
+        await insertWord(word);
+    }
+}
+
+async function main() {
+    // await generate();
+    await addWords();
 }
 
 main();
