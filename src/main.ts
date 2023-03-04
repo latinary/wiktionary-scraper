@@ -2,7 +2,7 @@ import { translateToCroatian } from "./ai/ai.js";
 import { getLinks } from "./crawler/crawler.js";
 import { ScrapedResult } from "./scraper/models/scraped_word.js";
 import { scrapeWord } from "./scraper/scraper.js";
-import { changeModel, convertWordData, getModel } from "./scraper/word_data.js";
+import { convertWordData } from "./scraper/word_data.js";
 import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -68,12 +68,12 @@ async function main() {
             await sleep(1000);
         }
         catch (e) {
-            const newModel = getModel() == 'chatgpt' ? 'davinci' : 'chatgpt';
+            // const newModel = getModel() == 'chatgpt' ? 'davinci' : 'chatgpt';
             console.log(e);
-            console.log(`Rate limit, switching model to ${newModel}`);
-            changeModel(newModel);
+            console.log(`Rate limit`);
+            // changeModel(newModel);
             console.log(`Current word count: ${[...scrapedWords, ...curr].length}`);
-            await sleep(80 * 1000);
+            await sleep(70 * 1000);
             console.log('Recovering from rate limit');
         }
     }

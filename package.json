@@ -3,6 +3,7 @@
   "dependencies": {
     "@types/cheerio": "^0.22.31",
     "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.0.3",
     "jest-environment-jsdom": "^29.4.3",
     "mysql": "^2.18.1",
     "node-fetch": "^3.3.0",

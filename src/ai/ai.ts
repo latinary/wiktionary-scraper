@@ -1,7 +1,9 @@
 import { Configuration, OpenAIApi } from 'openai';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY_PAID,
 });
 
 const openai = new OpenAIApi(configuration);
@@ -62,6 +64,8 @@ export async function chatgptTranslate(data: string): Promise<string> {
             { role: 'assistant', content: 'sposobnost' },
             { role: 'user', content: 'Translate: from, away from, out of' },
             { role: 'assistant', content: 'od, daleko od, izvan' },
+            { role: 'user', content: 'Translate: Alternative form of affingō' },
+            { role: 'assistant', content: "Alternativna forma od 'affingo'" },
             { role: 'user', content: `Translate: ${data}` }
         ],
         stop: ['Translate:'],
