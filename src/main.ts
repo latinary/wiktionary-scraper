@@ -9,8 +9,9 @@ import { fileURLToPath } from 'url';
 import { loadLinks } from "./files/loader.js";
 import { loadWords, saveWords } from "./files/words.js";
 import { InsertWord } from "./database/models/word.js";
-import { sleep } from "./util/util.js";
+import { normalize, sleep } from "./util/util.js";
 import { insertWord } from "./database/word_adder.js";
+import { getLastWord } from "./database/words.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -33,14 +34,19 @@ async function generate() {
     const lastUrl: string = scrapedWords[scrapedWords.length - 1].url;
     let start = false;
 
-    for (let i = 0; i < words.length; i++) {
+    let i = 0;
+
+    while(i < words.length) {
         const word = words[i];
 
         if (word == lastUrl) {
             start = true;
+            i++;
             console.log(`Starting with ${word}`);
+            continue;
         }
         if (!start) {
+            i++;
             continue;
         }
 
@@ -68,7 +74,8 @@ async function generate() {
     
             saveWords([...scrapedWords, ...curr]);
     
-            await sleep(delay);
+            i++;
+            await sleep(100);
         }
         catch (e) {
             // const newModel = getModel() == 'chatgpt' ? 'davinci' : 'chatgpt';
@@ -83,7 +90,7 @@ async function generate() {
             else if (delay == 500) {
                 delay = 1000;
             }
-            await sleep(60 * 1000);
+            await sleep(75 * 1000);
             console.log('Recovering from rate limit');
         }
     }
@@ -91,7 +98,19 @@ async function generate() {
 
 async function addWords() {
     // insertWord(scrapedWords[0]);
+
+    const last = await getLastWord();
+    let start = false;
+
     for (const word of scrapedWords) {
+        if (normalize(word.rijec) == last?.rijec) {
+            start = true;
+            continue;
+        }
+        if (!start) {
+            continue;
+        }
+
         await insertWord(word);
     }
 }

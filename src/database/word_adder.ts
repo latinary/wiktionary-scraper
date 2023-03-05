@@ -7,16 +7,16 @@ export async function insertWord(word: InsertWord) {
     const exists = await doesWordExist(word.rijec);
 
     if (exists) {
-        console.log('word exists');
+        console.log(`word ${word.rijec} exists`);
         return;
     }
 
     const r = await addWord(word);
 
     if (r) {
-        console.log('added word');
+        console.log(`added word ${word.rijec}`);
     }
     else {
-        console.log("couldn't add word")
+        console.log(`couldn't add word ${word.rijec}`);
     }
 }
